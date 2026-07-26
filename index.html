@@ -15,7 +15,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
   <style>
-    /* ===== CSS (полный набор, без изменений) ===== */
+    /* ===== CSS (полный набор) ===== */
     :root {
       --bg: #1E1E2E;
       --card: #2A2A3E;
@@ -352,11 +352,11 @@
 
 <script>
 // ============================================================
-//  FTC SCOUT V2 – FULL LOGIC (English UI, Admin stays Russian)
+//  FTC SCOUT V2 – FULL LOGIC with caching and offline support
 // ============================================================
 
 // ---------- ADMIN PASSWORD (Russian prompts) ----------
-const ADMIN_PASSWORD = 'GearLineTeam28419'; // Change to your own
+const ADMIN_PASSWORD = 'GearLineTeam28419';
 let adminAccessGranted = localStorage.getItem('adminAccess') === 'true';
 
 function checkAdminAccess() {
@@ -379,10 +379,26 @@ function logoutAdmin() {
 }
 
 // ---------- CONFIG ----------
-// !!! REPLACE WITH YOUR APPS SCRIPT WEB APP URL !!!
 const API_BASE = 'https://script.google.com/macros/s/AKfycbzOFykTPJ_pUFL0dSaMt5PjXPwmamjhf9TytwdgjpAPefIRwv19RKbAz4L1_KlI5M30/exec';
 
-// ---------- API (no UI text) ----------
+// ---------- CACHING ----------
+function saveMatchesToCache(matches) {
+  localStorage.setItem('cachedMatches', JSON.stringify(matches));
+}
+function loadMatchesFromCache() {
+  const raw = localStorage.getItem('cachedMatches');
+  return raw ? JSON.parse(raw) : null;
+}
+
+function saveTeamsToCache(teams) {
+  localStorage.setItem('cachedTeams', JSON.stringify(teams));
+}
+function loadTeamsFromCache() {
+  const raw = localStorage.getItem('cachedTeams');
+  return raw ? JSON.parse(raw) : null;
+}
+
+// ---------- API (with fallback to cache) ----------
 async function callApi(action, params = {}) {
   const url = new URL(API_BASE);
   url.searchParams.append('action', action);
@@ -393,13 +409,41 @@ async function callApi(action, params = {}) {
 }
 
 async function loadMatches() {
-  const res = await callApi('getMatches');
-  return res.matches || [];
+  try {
+    const res = await callApi('getMatches');
+    if (res && res.matches && Array.isArray(res.matches)) {
+      saveMatchesToCache(res.matches);
+      return res.matches;
+    }
+    throw new Error('No matches from server');
+  } catch (e) {
+    console.warn('Failed to fetch matches, using cache', e);
+    const cached = loadMatchesFromCache();
+    if (cached && cached.length > 0) {
+      return cached;
+    }
+    return [];
+  }
 }
+
 async function loadTeams() {
-  const res = await callApi('getTeams');
-  return res.teams || [];
+  try {
+    const res = await callApi('getTeams');
+    if (res && res.teams && Array.isArray(res.teams)) {
+      saveTeamsToCache(res.teams);
+      return res.teams;
+    }
+    throw new Error('No teams from server');
+  } catch (e) {
+    console.warn('Failed to fetch teams, using cache', e);
+    const cached = loadTeamsFromCache();
+    if (cached && cached.length > 0) {
+      return cached;
+    }
+    return [];
+  }
 }
+
 async function submitData(data) {
   const res = await callApi('submit', data);
   return res;
@@ -441,7 +485,7 @@ async function clearAllData() {
   return res;
 }
 
-// ---------- STORAGE (no UI text) ----------
+// ---------- STORAGE ----------
 function saveDraft(data) { localStorage.setItem('scoutDraft', JSON.stringify(data)); }
 function loadDraft() { const raw = localStorage.getItem('scoutDraft'); return raw ? JSON.parse(raw) : null; }
 function clearDraft() { localStorage.removeItem('scoutDraft'); }
@@ -452,7 +496,7 @@ function loadTheme() { return localStorage.getItem('theme') || 'dark'; }
 function saveQueue(queue) { localStorage.setItem('queue', JSON.stringify(queue)); }
 function loadQueue() { const raw = localStorage.getItem('queue'); return raw ? JSON.parse(raw) : []; }
 
-// ---------- QUEUE (no UI text) ----------
+// ---------- QUEUE ----------
 let queue = loadQueue();
 
 function addToQueue(item) {
@@ -470,7 +514,6 @@ async function processQueue() {
       if (item.type === 'submit') {
         await callApi('submit', item.payload);
       }
-      // other types can be added
     } catch (e) {
       console.error('Sync error, re-queueing', e);
       queue.push(item);
@@ -479,7 +522,7 @@ async function processQueue() {
   saveQueue(queue);
 }
 
-// ---------- OFFLINE / ONLINE status (English) ----------
+// ---------- OFFLINE / ONLINE ----------
 window.addEventListener('online', () => {
   document.getElementById('status').textContent = '🟢 Online';
   document.getElementById('status').className = 'online';
@@ -490,7 +533,7 @@ window.addEventListener('offline', () => {
   document.getElementById('status').className = 'offline';
 });
 
-// ---------- UI RENDER FUNCTIONS (English for non-admin) ----------
+// ---------- UI RENDER FUNCTIONS ----------
 function renderMatchSelect(matches) {
   const sel = document.getElementById('matchSelect');
   sel.innerHTML = matches.map(m => `<option value="${m}">${m}</option>`).join('');
@@ -515,7 +558,7 @@ function renderTeamDropdown(teams) {
   });
 }
 
-// Admin panel – Russian UI (unchanged)
+// Admin panel – Russian
 function renderAdminPanel(pending) {
   const container = document.getElementById('admin-content');
   if (!pending || pending.length === 0) {
@@ -607,7 +650,7 @@ function renderTeamStats(stats) {
   });
 }
 
-// ---------- EXPORT (English UI) ----------
+// ---------- EXPORT ----------
 function downloadFile(content, filename, mime) {
   const blob = new Blob([content], { type: mime });
   const link = document.createElement('a');
@@ -654,14 +697,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     btn.classList.toggle('active', btn.dataset.alliance === currentAlliance);
   });
 
-  // Load matches and teams
+  // Load matches and teams (with cache fallback)
   let matches = [];
   let teams = [];
   try {
     matches = await loadMatches();
     teams = await loadTeams();
     allTeams = teams.sort((a,b) => Number(a)-Number(b));
-  } catch(e) { alert('Loading error: ' + e.message); }
+  } catch (e) {
+    // Already handled inside load functions
+  }
+
+  // If still empty, try cache one more time
+  if (matches.length === 0) {
+    const cached = loadMatchesFromCache();
+    if (cached && cached.length > 0) matches = cached;
+  }
+  if (teams.length === 0) {
+    const cached = loadTeamsFromCache();
+    if (cached && cached.length > 0) teams = cached;
+  }
+  if (teams.length > 0) allTeams = teams.sort((a,b) => Number(a)-Number(b));
 
   renderMatchSelect(matches);
   renderTeamDropdown(allTeams);
@@ -787,10 +843,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     btn.addEventListener('click', async () => {
       const tab = btn.dataset.tab;
 
-      // Admin protection
       if (tab === 'admin') {
         if (!checkAdminAccess()) {
-          return; // Don't switch tab
+          return;
         }
       }
 
@@ -806,15 +861,22 @@ document.addEventListener('DOMContentLoaded', async () => {
           const m = await loadMatches();
           const sel = document.getElementById('adminMatchSelect');
           sel.innerHTML = m.map(match => `<option value="${match}">${match}</option>`).join('');
-        } catch(e) { alert('Ошибка загрузки админки: ' + e.message); }
+        } catch(e) {
+          alert('Ошибка загрузки админки: ' + e.message);
+        }
       }
       if (tab === 'stats') {
         const team = document.getElementById('teamInput').value.trim();
-        if (!team) { document.getElementById('stats-content').innerHTML = '<p>Enter a team number on the Scout tab first.</p>'; return; }
+        if (!team) {
+          document.getElementById('stats-content').innerHTML = '<p>Enter a team number on the Scout tab first.</p>';
+          return;
+        }
         try {
           const stats = await getTeamStats(team);
           renderTeamStats(stats);
-        } catch(e) { alert('Error loading stats: ' + e.message); }
+        } catch(e) {
+          alert('Error loading stats: ' + e.message);
+        }
       }
     });
   });
@@ -873,7 +935,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('exportCSV').addEventListener('click', exportRankingCSV);
   document.getElementById('exportPDF').addEventListener('click', exportRankingPDF);
 
-  // ---------- SETTINGS (English) ----------
+  // ---------- SETTINGS ----------
   document.getElementById('themeToggle').addEventListener('click', () => {
     const isLight = document.body.classList.toggle('light');
     saveTheme(isLight ? 'light' : 'dark');
@@ -884,7 +946,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     alert('Draft cleared');
   });
 
-  // ---------- Logout from Admin ----------
   document.getElementById('logoutAdminBtn').addEventListener('click', logoutAdmin);
 
   // Start sync
