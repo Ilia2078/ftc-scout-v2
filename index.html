@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -7,7 +7,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <title>FTC Scout V2</title>
-  
+
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <!-- jsPDF + autoTable -->
@@ -15,7 +15,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
   <style>
-    /* ===== CSS ===== */
+    /* ===== CSS (полный набор, без изменений) ===== */
     :root {
       --bg: #1E1E2E;
       --card: #2A2A3E;
@@ -176,7 +176,6 @@
       color: var(--text);
       cursor: pointer;
     }
-    /* вкладки */
     .tabs {
       display: flex;
       justify-content: space-around;
@@ -202,7 +201,6 @@
     }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
-    /* админка */
     .pending-group {
       background: var(--bg);
       border-radius: 10px;
@@ -226,7 +224,6 @@
       color: #fff;
       cursor: pointer;
     }
-    /* статистика */
     .stat-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -240,7 +237,6 @@
       text-align: center;
     }
     .stat-grid .value { font-size: 24px; font-weight: bold; color: var(--accent); }
-    /* адаптив */
     @media (max-width: 480px) {
       .counter-row button { width: 44px; height: 44px; }
       .alliance-buttons button { font-size: 14px; }
@@ -252,10 +248,10 @@
 <div id="app" class="dark">
   <header>
     <h1>⚙️ FTC SCOUT</h1>
-    <span id="status" class="online">🟢 Онлайн</span>
+    <span id="status" class="online">🟢 Online</span>
   </header>
 
-  <!-- Вкладки -->
+  <!-- Tabs -->
   <nav class="tabs">
     <button class="tab-btn active" data-tab="scout">📋 Scout</button>
     <button class="tab-btn" data-tab="admin">⚙️ Admin</button>
@@ -263,7 +259,7 @@
     <button class="tab-btn" data-tab="export">📤 Export</button>
   </nav>
 
-  <!-- ===== Вкладка SCOUT ===== -->
+  <!-- ===== SCOUT TAB (English) ===== -->
   <section id="tab-scout" class="tab-content active">
     <div class="card">
       <div class="match-selector">
@@ -278,7 +274,7 @@
     </div>
 
     <div class="card">
-      <input type="text" id="teamInput" placeholder="🔍 Номер команды..." autofocus>
+      <input type="text" id="teamInput" placeholder="🔍 Team number..." autofocus>
       <div id="teamDropdown"></div>
     </div>
 
@@ -300,22 +296,22 @@
       <label class="win"><input type="checkbox" id="win"> 🏆 Win (+3 RP)</label>
     </div>
 
-    <button id="sendBtn" class="send">📨 ОТПРАВИТЬ</button>
+    <button id="sendBtn" class="send">📨 SEND</button>
   </section>
 
-  <!-- ===== Вкладка ADMIN ===== -->
+  <!-- ===== ADMIN TAB (Russian) ===== -->
   <section id="tab-admin" class="tab-content">
     <div class="card">
       <h2>Управление матчами</h2>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;">
         <input type="number" id="qCount" value="10" min="1" max="100" style="width:80px;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);">
-        <button id="genMatches" style="background:var(--accent);color:#fff;border:none;padding:8px 16px;border-radius:8px;">🔄 Generate</button>
-        <button id="resetMatches" style="background:var(--danger);color:#fff;border:none;padding:8px 16px;border-radius:8px;">↺ Reset</button>
+        <button id="genMatches" style="background:var(--accent);color:#fff;border:none;padding:8px 16px;border-radius:8px;">🔄 Сгенерировать</button>
+        <button id="resetMatches" style="background:var(--danger);color:#fff;border:none;padding:8px 16px;border-radius:8px;">↺ Сброс</button>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <select id="adminMatchSelect"></select>
-        <button id="lockMatchBtn" style="background:var(--accent);color:#fff;border:none;padding:8px 16px;border-radius:8px;">🔒 Lock</button>
-        <button id="unlockMatchBtn" style="background:#FF9800;color:#fff;border:none;padding:8px 16px;border-radius:8px;">🔓 Unlock</button>
+        <button id="lockMatchBtn" style="background:var(--accent);color:#fff;border:none;padding:8px 16px;border-radius:8px;">🔒 Заблокировать</button>
+        <button id="unlockMatchBtn" style="background:#FF9800;color:#fff;border:none;padding:8px 16px;border-radius:8px;">🔓 Разблокировать</button>
       </div>
     </div>
 
@@ -329,39 +325,64 @@
     </div>
   </section>
 
-  <!-- ===== Вкладка STATS ===== -->
+  <!-- ===== STATS TAB (English) ===== -->
   <section id="tab-stats" class="tab-content">
     <div class="card">
-      <h2>Статистика команды</h2>
-      <p>Введите номер команды в поле поиска на вкладке Scout, затем перейдите сюда.</p>
+      <h2>Team Statistics</h2>
+      <p>Enter team number in the search field on the Scout tab, then come here.</p>
       <div id="stats-content"></div>
     </div>
   </section>
 
-  <!-- ===== Вкладка EXPORT ===== -->
+  <!-- ===== EXPORT TAB (English) ===== -->
   <section id="tab-export" class="tab-content">
     <div class="card">
-      <h2>Экспорт данных</h2>
-      <button id="exportCSV" style="width:100%;padding:14px;background:#4CAF50;color:#fff;border:none;border-radius:12px;margin-bottom:10px;">📄 Скачать CSV (рейтинг)</button>
-      <button id="exportPDF" style="width:100%;padding:14px;background:#f44336;color:#fff;border:none;border-radius:12px;">📄 Скачать PDF (рейтинг)</button>
+      <h2>Export Data</h2>
+      <button id="exportCSV" style="width:100%;padding:14px;background:#4CAF50;color:#fff;border:none;border-radius:12px;margin-bottom:10px;">📄 Download CSV (ranking)</button>
+      <button id="exportPDF" style="width:100%;padding:14px;background:#f44336;color:#fff;border:none;border-radius:12px;">📄 Download PDF (ranking)</button>
     </div>
   </section>
 
   <footer>
-    <button id="themeToggle">🌓 Тема</button>
-    <button id="clearDraftBtn">🗑️ Очистить черновик</button>
+    <button id="themeToggle">🌓 Theme</button>
+    <button id="clearDraftBtn">🗑️ Clear draft</button>
+    <button id="logoutAdminBtn">🚪 Выйти из админки</button>
   </footer>
 </div>
 
 <script>
 // ============================================================
-//  ВСЯ ЛОГИКА ПРИЛОЖЕНИЯ (единый скрипт)
+//  FTC SCOUT V2 – FULL LOGIC (English UI, Admin stays Russian)
 // ============================================================
 
-// ---------- КОНФИГ ----------
-const API_BASE = 'https://script.google.com/macros/s/AKfycbzOFykTPJ_pUFL0dSaMt5PjXPwmamjhf9TytwdgjpAPefIRwv19RKbAz4L1_KlI5M30/exec'; // ЗАМЕНИТЕ НА ВАШ URL
+// ---------- ADMIN PASSWORD (Russian prompts) ----------
+const ADMIN_PASSWORD = 'FTC2026'; // Change to your own
+let adminAccessGranted = localStorage.getItem('adminAccess') === 'true';
 
-// ---------- API ----------
+function checkAdminAccess() {
+  if (adminAccessGranted) return true;
+  const entered = prompt('Введите пароль для доступа к админ-панели:');
+  if (entered === ADMIN_PASSWORD) {
+    adminAccessGranted = true;
+    localStorage.setItem('adminAccess', 'true');
+    return true;
+  } else {
+    alert('Неверный пароль!');
+    return false;
+  }
+}
+
+function logoutAdmin() {
+  adminAccessGranted = false;
+  localStorage.removeItem('adminAccess');
+  alert('Вы вышли из админ-панели');
+}
+
+// ---------- CONFIG ----------
+// !!! REPLACE WITH YOUR APPS SCRIPT WEB APP URL !!!
+const API_BASE = 'https://script.google.com/macros/s/ВАШ_АЙДИ/exec';
+
+// ---------- API (no UI text) ----------
 async function callApi(action, params = {}) {
   const url = new URL(API_BASE);
   url.searchParams.append('action', action);
@@ -415,8 +436,12 @@ async function syncTeams() {
   const res = await callApi('syncTeams');
   return res;
 }
+async function clearAllData() {
+  const res = await callApi('clearAll');
+  return res;
+}
 
-// ---------- ХРАНИЛИЩЕ (localStorage) ----------
+// ---------- STORAGE (no UI text) ----------
 function saveDraft(data) { localStorage.setItem('scoutDraft', JSON.stringify(data)); }
 function loadDraft() { const raw = localStorage.getItem('scoutDraft'); return raw ? JSON.parse(raw) : null; }
 function clearDraft() { localStorage.removeItem('scoutDraft'); }
@@ -427,7 +452,7 @@ function loadTheme() { return localStorage.getItem('theme') || 'dark'; }
 function saveQueue(queue) { localStorage.setItem('queue', JSON.stringify(queue)); }
 function loadQueue() { const raw = localStorage.getItem('queue'); return raw ? JSON.parse(raw) : []; }
 
-// ---------- ОЧЕРЕДЬ ----------
+// ---------- QUEUE (no UI text) ----------
 let queue = loadQueue();
 
 function addToQueue(item) {
@@ -445,7 +470,7 @@ async function processQueue() {
       if (item.type === 'submit') {
         await callApi('submit', item.payload);
       }
-      // другие типы можно добавить
+      // other types can be added
     } catch (e) {
       console.error('Sync error, re-queueing', e);
       queue.push(item);
@@ -454,18 +479,18 @@ async function processQueue() {
   saveQueue(queue);
 }
 
-// ---------- ОФЛАЙН ----------
+// ---------- OFFLINE / ONLINE status (English) ----------
 window.addEventListener('online', () => {
-  document.getElementById('status').textContent = '🟢 Онлайн';
+  document.getElementById('status').textContent = '🟢 Online';
   document.getElementById('status').className = 'online';
   processQueue();
 });
 window.addEventListener('offline', () => {
-  document.getElementById('status').textContent = '🔴 Офлайн';
+  document.getElementById('status').textContent = '🔴 Offline';
   document.getElementById('status').className = 'offline';
 });
 
-// ---------- UI (рендеринг) ----------
+// ---------- UI RENDER FUNCTIONS (English for non-admin) ----------
 function renderMatchSelect(matches) {
   const sel = document.getElementById('matchSelect');
   sel.innerHTML = matches.map(m => `<option value="${m}">${m}</option>`).join('');
@@ -475,7 +500,7 @@ function renderTeamDropdown(teams) {
   const container = document.getElementById('teamDropdown');
   container.innerHTML = '';
   if (!teams || teams.length === 0) {
-    container.innerHTML = '<div style="padding:10px;color:#999;">Нет команд</div>';
+    container.innerHTML = '<div style="padding:10px;color:#999;">No teams</div>';
     return;
   }
   teams.forEach(team => {
@@ -490,13 +515,13 @@ function renderTeamDropdown(teams) {
   });
 }
 
+// Admin panel – Russian UI (unchanged)
 function renderAdminPanel(pending) {
   const container = document.getElementById('admin-content');
   if (!pending || pending.length === 0) {
     container.innerHTML = '<p>✅ Все данные подтверждены.</p>';
     return;
   }
-  // Группировка
   const groups = {};
   pending.forEach(p => {
     const key = p.match + '|' + p.team;
@@ -513,13 +538,12 @@ function renderAdminPanel(pending) {
         <span>Auto: ${r.autoArtifacts}/${r.autoHits}</span>
         <span>Tele: ${r.teleArtifacts}/${r.teleHits}</span>
         <span>RP: ${r.parking?1:0},${r.pattern?1:0},${r.artifactsRP?1:0},${r.win?1:0}</span>
-        <button class="approve-btn" data-match="${r.match}" data-team="${r.team}" data-scout="${r.user}">✅ Approve</button>
+        <button class="approve-btn" data-match="${r.match}" data-team="${r.team}" data-scout="${r.user}">✅ Подтвердить</button>
       </div>`;
     });
     html += `</div>`;
   }
   container.innerHTML = html;
-  // Обработчики Approve
   container.querySelectorAll('.approve-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
       const match = btn.dataset.match;
@@ -528,7 +552,6 @@ function renderAdminPanel(pending) {
       if (!confirm(`Подтвердить данные скаута ${scout} для ${match} – Команда ${team}?`)) return;
       try {
         await approveSubmission(match, team, scout);
-        // обновить список
         const updated = await getPending();
         renderAdminPanel(updated);
       } catch (e) {
@@ -538,26 +561,26 @@ function renderAdminPanel(pending) {
   });
 }
 
+// Team stats – English
 function renderTeamStats(stats) {
   const container = document.getElementById('stats-content');
   if (!stats || !stats.matches || stats.matches.length === 0) {
-    container.innerHTML = '<p>Нет данных для этой команды.</p>';
+    container.innerHTML = '<p>No data for this team.</p>';
     return;
   }
   let html = `
-    <h3>Команда ${stats.team}</h3>
+    <h3>Team ${stats.team}</h3>
     <div class="stat-grid">
-      <div>Матчей <div class="value">${stats.qCount}</div></div>
-      <div>Средний RP <div class="value">${stats.avg}</div></div>
-      <div>Медиана RP <div class="value">${stats.median}</div></div>
-      <div>Стабильность <div class="value">${stats.consistency}%</div></div>
-      <div>Лучший матч <div class="value">${stats.best.match} (${stats.best.totalRP})</div></div>
-      <div>Худший матч <div class="value">${stats.worst.match} (${stats.worst.totalRP})</div></div>
+      <div>Matches <div class="value">${stats.qCount}</div></div>
+      <div>Average RP <div class="value">${stats.avg}</div></div>
+      <div>Median RP <div class="value">${stats.median}</div></div>
+      <div>Consistency <div class="value">${stats.consistency}%</div></div>
+      <div>Best match <div class="value">${stats.best.match} (${stats.best.totalRP})</div></div>
+      <div>Worst match <div class="value">${stats.worst.match} (${stats.worst.totalRP})</div></div>
     </div>
     <canvas id="teamChart" width="400" height="200"></canvas>
   `;
   container.innerHTML = html;
-  // Построить график
   const ctx = document.getElementById('teamChart').getContext('2d');
   const labels = stats.matches.map(m => m.match);
   const autoData = stats.matches.map(m => m.autoArtifacts);
@@ -584,7 +607,7 @@ function renderTeamStats(stats) {
   });
 }
 
-// ---------- ЭКСПОРТ ----------
+// ---------- EXPORT (English UI) ----------
 function downloadFile(content, filename, mime) {
   const blob = new Blob([content], { type: mime });
   const link = document.createElement('a');
@@ -617,36 +640,36 @@ async function exportRankingPDF() {
   doc.save('ranking.pdf');
 }
 
-// ---------- ОСНОВНОЕ ПРИЛОЖЕНИЕ ----------
+// ---------- MAIN APPLICATION ----------
 let allTeams = [];
 let currentAlliance = 'Red1';
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Тема
+  // Theme
   const theme = loadTheme();
   document.body.classList.toggle('light', theme === 'light');
-  // Станция
+  // Station
   currentAlliance = loadStation() || 'Red1';
   document.querySelectorAll('.alliance-buttons button').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.alliance === currentAlliance);
   });
 
-  // Загрузка матчей и команд
+  // Load matches and teams
   let matches = [];
   let teams = [];
   try {
     matches = await loadMatches();
     teams = await loadTeams();
     allTeams = teams.sort((a,b) => Number(a)-Number(b));
-  } catch(e) { alert('Ошибка загрузки: ' + e.message); }
+  } catch(e) { alert('Loading error: ' + e.message); }
 
   renderMatchSelect(matches);
   renderTeamDropdown(allTeams);
 
-  // Восстановление черновика
+  // Restore draft
   const draft = loadDraft();
   if (draft && draft.team) {
-    if (confirm('Восстановить предыдущие данные?')) {
+    if (confirm('Restore previous data?')) {
       document.getElementById('matchSelect').value = draft.match || '';
       document.getElementById('teamInput').value = draft.team;
       document.getElementById('autoArtifacts').innerText = draft.autoArtifacts || 0;
@@ -660,7 +683,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // Автосохранение
+  // Auto-save
   setInterval(() => {
     const data = {
       match: document.getElementById('matchSelect').value,
@@ -678,8 +701,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     saveDraft(data);
   }, 2000);
 
-  // ---------- Обработчики ----------
-  // Счётчики
+  // ---------- EVENT HANDLERS ----------
+  // Counters
   document.querySelectorAll('.counter-row button').forEach(btn => {
     btn.addEventListener('click', () => {
       const id = btn.dataset.id;
@@ -688,7 +711,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       let val = parseInt(el.innerText) + delta;
       if (val < 0) val = 0;
       el.innerText = val;
-      // Логика пар (Hits <= Samples)
       const pairMap = { autoHits: 'autoArtifacts', teleHits: 'teleArtifacts' };
       if (pairMap[id]) {
         const pairEl = document.getElementById(pairMap[id]);
@@ -699,7 +721,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
-  // Альянс
+  // Alliance buttons
   document.querySelectorAll('.alliance-buttons button').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.alliance-buttons button').forEach(b => b.classList.remove('active'));
@@ -709,12 +731,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
-  // Отправка
+  // Send
   document.getElementById('sendBtn').addEventListener('click', async () => {
     const team = document.getElementById('teamInput').value.trim();
-    if (!team) { alert('Выберите команду'); return; }
+    if (!team) { alert('Select a team'); return; }
     const match = document.getElementById('matchSelect').value;
-    if (!match) { alert('Выберите матч'); return; }
+    if (!match) { alert('Select a match'); return; }
     const data = {
       match,
       alliance: currentAlliance,
@@ -730,7 +752,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
     addToQueue({ type: 'submit', payload: data });
     await processQueue();
-    // Сброс
+    // Reset
     document.getElementById('teamInput').value = '';
     document.getElementById('autoArtifacts').innerText = '0';
     document.getElementById('autoHits').innerText = '0';
@@ -741,14 +763,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('artifactsRP').checked = false;
     document.getElementById('win').checked = false;
     clearDraft();
-    // Следующий матч
+    // Next match
     const sel = document.getElementById('matchSelect');
     if (sel.selectedIndex < sel.options.length - 1) {
       sel.selectedIndex++;
     }
   });
 
-  // Поиск команд
+  // Team search
   document.getElementById('teamInput').addEventListener('input', function() {
     const val = this.value.trim();
     const filtered = allTeams.filter(t => t.includes(val));
@@ -760,21 +782,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     setTimeout(() => { document.getElementById('teamDropdown').style.display = 'none'; }, 200);
   });
 
-  // ---------- Вкладки ----------
+  // ---------- TAB SWITCHING (with admin protection) ----------
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
+      const tab = btn.dataset.tab;
+
+      // Admin protection
+      if (tab === 'admin') {
+        if (!checkAdminAccess()) {
+          return; // Don't switch tab
+        }
+      }
+
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      const tab = btn.dataset.tab;
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
       document.getElementById('tab-' + tab).classList.add('active');
 
       if (tab === 'admin') {
-        // Загрузить админку
         try {
           const pending = await getPending();
           renderAdminPanel(pending);
-          // также загрузить матчи для выбора
           const m = await loadMatches();
           const sel = document.getElementById('adminMatchSelect');
           sel.innerHTML = m.map(match => `<option value="${match}">${match}</option>`).join('');
@@ -782,23 +810,22 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
       if (tab === 'stats') {
         const team = document.getElementById('teamInput').value.trim();
-        if (!team) { document.getElementById('stats-content').innerHTML = '<p>Сначала выберите команду на вкладке Scout.</p>'; return; }
+        if (!team) { document.getElementById('stats-content').innerHTML = '<p>Enter a team number on the Scout tab first.</p>'; return; }
         try {
           const stats = await getTeamStats(team);
           renderTeamStats(stats);
-        } catch(e) { alert('Ошибка загрузки статистики: ' + e.message); }
+        } catch(e) { alert('Error loading stats: ' + e.message); }
       }
     });
   });
 
-  // ---------- Админ-функции ----------
+  // ---------- ADMIN ACTIONS (Russian UI) ----------
   document.getElementById('genMatches').addEventListener('click', async () => {
     const count = parseInt(document.getElementById('qCount').value) || 10;
     if (!confirm(`Сгенерировать Q1-Q${count}?`)) return;
     try {
       await generateMatches(count);
       alert('Матчи созданы');
-      // обновить списки
       const m = await loadMatches();
       renderMatchSelect(m);
       const sel = document.getElementById('adminMatchSelect');
@@ -836,18 +863,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       await syncTeams();
       alert('Синхронизация выполнена');
-      // обновить список команд
       const teams = await loadTeams();
       allTeams = teams.sort((a,b) => Number(a)-Number(b));
       renderTeamDropdown(allTeams);
     } catch(e) { alert('Ошибка: ' + e.message); }
   });
 
-  // ---------- Экспорт ----------
+  // ---------- EXPORT ----------
   document.getElementById('exportCSV').addEventListener('click', exportRankingCSV);
   document.getElementById('exportPDF').addEventListener('click', exportRankingPDF);
 
-  // ---------- Настройки ----------
+  // ---------- SETTINGS (English) ----------
   document.getElementById('themeToggle').addEventListener('click', () => {
     const isLight = document.body.classList.toggle('light');
     saveTheme(isLight ? 'light' : 'dark');
@@ -855,10 +881,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.getElementById('clearDraftBtn').addEventListener('click', () => {
     clearDraft();
-    alert('Черновик очищен');
+    alert('Draft cleared');
   });
 
-  // Запустить синхронизацию при загрузке
+  // ---------- Logout from Admin ----------
+  document.getElementById('logoutAdminBtn').addEventListener('click', logoutAdmin);
+
+  // Start sync
   processQueue();
 });
 </script>
