@@ -1,0 +1,552 @@
+/* ===== style.css ===== */
+/* Автор: FTC Scout V2
+   Описание: Единый файл стилей для тёмной и светлой темы.
+   Адаптирован под мобильные устройства и десктопы. */
+
+/* ===== ПЕРЕМЕННЫЕ (по умолчанию – тёмная тема) ===== */
+:root {
+  --bg: #1E1E2E;
+  --card: #2A2A3E;
+  --text: #EEE;
+  --text-secondary: #AAA;
+  --accent: #4CAF50;
+  --accent-hover: #45a049;
+  --danger: #f44336;
+  --danger-hover: #d32f2f;
+  --info: #2196F3;
+  --info-hover: #1976D2;
+  --warn: #FF9800;
+  --shadow: 0 8px 20px rgba(0,0,0,0.5);
+  --radius: 16px;
+  --border: #444;
+  --transition: 0.3s ease;
+}
+
+/* ===== СВЕТЛАЯ ТЕМА ===== */
+body.light {
+  --bg: #F5F5F5;
+  --card: #FFFFFF;
+  --text: #222;
+  --text-secondary: #666;
+  --border: #ddd;
+  --shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* ===== ОБЩИЕ СБРОСЫ ===== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  padding: 12px;
+  max-width: 600px;
+  margin: 0 auto;
+  transition: background var(--transition), color var(--transition);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== КАРТОЧКИ ===== */
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+  transition: background var(--transition), box-shadow var(--transition);
+}
+
+/* ===== ЗАГОЛОВКИ ===== */
+h1, h2, h3 {
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+h1 { font-size: 24px; }
+h2 { font-size: 20px; }
+h3 { font-size: 18px; }
+
+/* ===== ХЕДЕР ===== */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 4px 12px 4px;
+}
+header h1 {
+  margin: 0;
+  font-size: 22px;
+}
+
+/* ===== СТАТУС ОНЛАЙН/ОФЛАЙН ===== */
+#status {
+  font-size: 14px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 500;
+  transition: background var(--transition);
+  background: var(--accent);
+  color: #fff;
+}
+#status.offline {
+  background: var(--danger);
+}
+
+/* ===== ВКЛАДКИ ===== */
+.tabs {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 16px;
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 4px;
+  box-shadow: var(--shadow);
+  transition: background var(--transition);
+}
+.tabs button {
+  background: transparent;
+  border: none;
+  padding: 12px 8px;
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 15px;
+  cursor: pointer;
+  flex: 1;
+  transition: background var(--transition), color var(--transition);
+  font-weight: 500;
+}
+.tabs button.active {
+  background: var(--accent);
+  color: #fff;
+}
+.tabs button:hover:not(.active) {
+  background: rgba(255,255,255,0.05);
+}
+
+/* ===== КОНТЕНТ ВКЛАДОК ===== */
+.tab-content {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+.tab-content.active {
+  display: block;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== ВЫПАДАЮЩИЙ СПИСОК (матчи) ===== */
+select {
+  width: 100%;
+  padding: 14px;
+  font-size: 18px;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 12px;
+  transition: border var(--transition), background var(--transition);
+  appearance: auto;
+}
+select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(76,175,80,0.2);
+}
+
+/* ===== КНОПКИ СТАНЦИЙ ===== */
+.alliance-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.alliance-buttons button {
+  padding: 12px;
+  font-size: 16px;
+  border: none;
+  border-radius: 10px;
+  background: #3A3A4E;
+  color: var(--text);
+  cursor: pointer;
+  transition: background var(--transition), transform 0.1s;
+}
+.alliance-buttons button.active {
+  background: var(--accent);
+  color: #fff;
+}
+.alliance-buttons button:active {
+  transform: scale(0.96);
+}
+
+/* ===== ПОИСК КОМАНДЫ ===== */
+#teamInput {
+  width: 100%;
+  padding: 14px;
+  font-size: 18px;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  transition: border var(--transition), background var(--transition);
+}
+#teamInput:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(76,175,80,0.2);
+}
+
+#teamDropdown {
+  background: var(--card);
+  border-radius: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 4px;
+  box-shadow: var(--shadow);
+  display: none;
+  position: absolute;
+  width: 100%;
+  z-index: 100;
+  left: 0;
+  top: calc(100% + 4px);
+}
+#teamDropdown div {
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+#teamDropdown div:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Поле поиска – обёртка для позиционирования */
+#team-search {
+  position: relative;
+}
+
+/* ===== СЧЁТЧИКИ (COUNTERS) ===== */
+.counter-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 10px 0;
+}
+.counter-row span:first-child {
+  width: 80px;
+  font-weight: 500;
+}
+.counter-row span:last-child {
+  font-size: 28px;
+  font-weight: bold;
+  min-width: 40px;
+  text-align: center;
+}
+.counter-row button {
+  width: 48px;
+  height: 48px;
+  font-size: 24px;
+  border: none;
+  border-radius: 12px;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  transition: background var(--transition), transform 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.counter-row button:hover {
+  background: var(--accent-hover);
+}
+.counter-row button:active {
+  transform: scale(0.92);
+}
+
+/* ===== ЧЕКБОКСЫ (Ranking Points) ===== */
+#ranking-points label {
+  display: block;
+  font-size: 18px;
+  padding: 8px 0;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+#ranking-points label:hover {
+  opacity: 0.85;
+}
+#ranking-points input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin-right: 12px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+#ranking-points .win {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 2px solid var(--accent);
+}
+
+/* ===== ГЛАВНАЯ КНОПКА ОТПРАВКИ ===== */
+.send {
+  width: 100%;
+  padding: 18px;
+  font-size: 22px;
+  background: var(--info);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-weight: bold;
+  transition: background var(--transition), transform 0.15s;
+  margin-top: 8px;
+}
+.send:hover {
+  background: var(--info-hover);
+}
+.send:active {
+  transform: scale(0.97);
+}
+
+/* ===== ФУТЕР / НАВИГАЦИЯ ===== */
+footer {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+footer button {
+  background: var(--card);
+  border: none;
+  padding: 12px 20px;
+  border-radius: 30px;
+  font-size: 16px;
+  color: var(--text);
+  cursor: pointer;
+  transition: background var(--transition), transform 0.1s;
+  box-shadow: var(--shadow);
+}
+footer button:active {
+  transform: scale(0.95);
+}
+footer button:hover {
+  background: var(--border);
+}
+
+/* ===== АДМИН-ПАНЕЛЬ ===== */
+.pending-group {
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+.pending-group h3 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 16px;
+}
+.pending-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.pending-item:last-child {
+  border-bottom: none;
+}
+.pending-item button {
+  background: var(--accent);
+  border: none;
+  padding: 6px 14px;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background var(--transition);
+}
+.pending-item button:hover {
+  background: var(--accent-hover);
+}
+
+/* Стили для кнопок админки (Lock, Unlock, Sync и т.д.) */
+.admin-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.admin-actions button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  background: var(--info);
+  color: #fff;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+.admin-actions button:hover {
+  background: var(--info-hover);
+}
+.admin-actions .danger {
+  background: var(--danger);
+}
+.admin-actions .danger:hover {
+  background: var(--danger-hover);
+}
+.admin-actions .warn {
+  background: var(--warn);
+}
+
+/* ===== СТАТИСТИКА ===== */
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 10px 0;
+}
+.stat-grid div {
+  background: var(--bg);
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+  transition: background var(--transition);
+}
+.stat-grid .value {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--accent);
+  display: block;
+  margin-top: 4px;
+}
+
+/* График */
+canvas {
+  max-width: 100%;
+  height: auto !important;
+  margin: 12px 0;
+  background: transparent;
+}
+
+/* ===== ТАБЛИЦЫ (рейтинг, экспорт) ===== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+}
+th, td {
+  padding: 10px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+th {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+tr:nth-child(even) {
+  background: rgba(255,255,255,0.02);
+}
+body.light tr:nth-child(even) {
+  background: rgba(0,0,0,0.02);
+}
+
+/* ===== СКРОЛЛБАР ===== */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-hover);
+}
+
+/* ===== МЕДИАЗАПРОСЫ (адаптив) ===== */
+@media (max-width: 480px) {
+  body {
+    padding: 8px;
+  }
+  .card {
+    padding: 16px;
+  }
+  .counter-row button {
+    width: 44px;
+    height: 44px;
+    font-size: 22px;
+  }
+  .alliance-buttons button {
+    font-size: 14px;
+    padding: 10px;
+  }
+  .tabs button {
+    font-size: 13px;
+    padding: 10px 4px;
+  }
+  .stat-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .stat-grid .value {
+    font-size: 20px;
+  }
+  footer button {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+  .send {
+    font-size: 20px;
+    padding: 16px;
+  }
+  h1 { font-size: 20px; }
+  h2 { font-size: 18px; }
+  h3 { font-size: 16px; }
+}
+
+@media (max-width: 380px) {
+  .counter-row span:first-child {
+    width: 60px;
+  }
+  .alliance-buttons {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ===== УТИЛИТЫ ===== */
+.text-center { text-align: center; }
+.mt-8 { margin-top: 8px; }
+.mb-8 { margin-bottom: 8px; }
+.hidden { display: none; }
+.flex { display: flex; }
+.flex-center { align-items: center; justify-content: center; }
+.gap-8 { gap: 8px; }
+
+/* Анимация загрузки (опционально) */
+.loading {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

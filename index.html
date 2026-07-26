@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1E1E2E">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <title>FTC Scout V2</title>
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <!-- jsPDF + autoTable -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+  <style>
+    /* ===== CSS ===== */
+    :root {
+      --bg: #1E1E2E;
+      --card: #2A2A3E;
+      --text: #EEE;
+      --accent: #4CAF50;
+      --danger: #f44336;
+      --shadow: 0 8px 20px rgba(0,0,0,0.5);
+      --radius: 16px;
+      --border: #444;
+    }
+    * { box-sizing: border-box; margin:0; padding:0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      padding: 12px;
+      max-width: 600px;
+      margin: 0 auto;
+      transition: background 0.3s;
+    }
+    body.light {
+      --bg: #F5F5F5;
+      --card: #FFFFFF;
+      --text: #222;
+      --border: #ccc;
+    }
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 4px 12px 4px;
+    }
+    #status {
+      font-size: 14px;
+      background: #4CAF50;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+    #status.offline { background: #f44336; }
+    select {
+      width: 100%;
+      padding: 14px;
+      font-size: 18px;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 12px;
+    }
+    .alliance-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .alliance-buttons button {
+      padding: 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 10px;
+      background: #3A3A4E;
+      color: var(--text);
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .alliance-buttons button.active {
+      background: var(--accent);
+      color: #fff;
+    }
+    #teamInput {
+      width: 100%;
+      padding: 14px;
+      font-size: 18px;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    #teamDropdown {
+      background: var(--card);
+      border-radius: 10px;
+      max-height: 200px;
+      overflow-y: auto;
+      margin-top: 4px;
+    }
+    #teamDropdown div {
+      padding: 10px 14px;
+      cursor: pointer;
+    }
+    #teamDropdown div:hover { background: #3A3A4E; }
+    .counter-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 10px 0;
+    }
+    .counter-row span:first-child { width: 80px; }
+    .counter-row span:last-child {
+      font-size: 28px;
+      font-weight: bold;
+      min-width: 40px;
+      text-align: center;
+    }
+    .counter-row button {
+      width: 48px;
+      height: 48px;
+      font-size: 24px;
+      border: none;
+      border-radius: 12px;
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+    }
+    #ranking-points label {
+      display: block;
+      font-size: 18px;
+      padding: 8px 0;
+      cursor: pointer;
+    }
+    #ranking-points input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      margin-right: 12px;
+      accent-color: var(--accent);
+    }
+    .send {
+      width: 100%;
+      padding: 18px;
+      font-size: 22px;
+      background: #2196F3;
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 8px;
+    }
+    .send:active { transform: scale(0.97); }
+    footer {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 20px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    footer button {
+      background: var(--card);
+      border: none;
+      padding: 12px 20px;
+      border-radius: 30px;
+      font-size: 16px;
+      color: var(--text);
+      cursor: pointer;
+    }
+    /* вкладки */
+    .tabs {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 16px;
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 4px;
+    }
+    .tabs button {
+      background: transparent;
+      border: none;
+      padding: 12px 16px;
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 16px;
+      cursor: pointer;
+      flex: 1;
+      transition: 0.2s;
+    }
+    .tabs button.active {
+      background: var(--accent);
+      color: #fff;
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    /* админка */
+    .pending-group {
+      background: var(--bg);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .pending-item {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .pending-item:last-child { border-bottom: none; }
+    .pending-item button {
+      background: var(--accent);
+      border: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+    }
+    /* статистика */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 10px 0;
+    }
+    .stat-grid div {
+      background: var(--bg);
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .stat-grid .value { font-size: 24px; font-weight: bold; color: var(--accent); }
+    /* адаптив */
+    @media (max-width: 480px) {
+      .counter-row button { width: 44px; height: 44px; }
+      .alliance-buttons button { font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="app" class="dark">
+  <header>
+    <h1>⚙️ FTC SCOUT</h1>
+    <span id="status" class="online">🟢 Онлайн</span>
+  </header>
+
+  <!-- Вкладки -->
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="scout">📋 Scout</button>
+    <button class="tab-btn" data-tab="admin">⚙️ Admin</button>
+    <button class="tab-btn" data-tab="stats">📊 Stats</button>
+    <button class="tab-btn" data-tab="export">📤 Export</button>
+  </nav>
+
+  <!-- ===== Вкладка SCOUT ===== -->
+  <section id="tab-scout" class="tab-content active">
+    <div class="card">
+      <div class="match-selector">
+        <select id="matchSelect"></select>
+        <div class="alliance-buttons">
+          <button data-alliance="Red1" class="active">🔴 Red 1</button>
+          <button data-alliance="Red2">🔴 Red 2</button>
+          <button data-alliance="Blue1">🔵 Blue 1</button>
+          <button data-alliance="Blue2">🔵 Blue 2</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <input type="text" id="teamInput" placeholder="🔍 Номер команды..." autofocus>
+      <div id="teamDropdown"></div>
+    </div>
+
+    <div class="card">
+      <h2>🤖 Auto</h2>
+      <div class="counter-row"><span>Samples</span><button data-id="autoArtifacts" data-delta="-1">−</button><span id="autoArtifacts">0</span><button data-id="autoArtifacts" data-delta="1">+</button></div>
+      <div class="counter-row"><span>Hits</span><button data-id="autoHits" data-delta="-1">−</button><span id="autoHits">0</span><button data-id="autoHits" data-delta="1">+</button></div>
+
+      <h2>🎮 TeleOp</h2>
+      <div class="counter-row"><span>Samples</span><button data-id="teleArtifacts" data-delta="-1">−</button><span id="teleArtifacts">0</span><button data-id="teleArtifacts" data-delta="1">+</button></div>
+      <div class="counter-row"><span>Hits</span><button data-id="teleHits" data-delta="-1">−</button><span id="teleHits">0</span><button data-id="teleHits" data-delta="1">+</button></div>
+    </div>
+
+    <div class="card" id="ranking-points">
+      <h2>🏆 Ranking Points</h2>
+      <label><input type="checkbox" id="parking"> Parking</label>
+      <label><input type="checkbox" id="pattern"> Pattern</label>
+      <label><input type="checkbox" id="artifactsRP"> Artifacts</label>
+      <label class="win"><input type="checkbox" id="win"> 🏆 Win (+3 RP)</label>
+    </div>
+
+    <button id="sendBtn" class="send">📨 ОТПРАВИТЬ</button>
+  </section>
+
+  <!-- ===== Вкладка ADMIN ===== -->
+  <section id="tab-admin" class="tab-content">
+    <div class="card">
+      <h2>Управление матчами</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;">
+        <input type="number" id="qCount" value="10" min="1" max="100" style="width:80px;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);">
+        <button id="genMatches" style="background:var(--accent);color:#fff;border:none;padding:8px 16px;border-radius:8px;">🔄 Generate</button>
+        <button id="resetMatches" style="background:var(--danger);color:#fff;border:none;padding:8px 16px;border-radius:8px;">↺ Reset</button>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <select id="adminMatchSelect"></select>
+        <button id="lockMatchBtn" style="background:var(--accent);color:#fff;border:none;padding:8px 16px;border-radius:8px;">🔒 Lock</button>
+        <button id="unlockMatchBtn" style="background:#FF9800;color:#fff;border:none;padding:8px 16px;border-radius:8px;">🔓 Unlock</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📋 Ожидают подтверждения</h2>
+      <div id="admin-content"><p>Загрузка...</p></div>
+    </div>
+
+    <div class="card">
+      <button id="syncTeamsBtn" style="width:100%;padding:12px;background:#2196F3;color:#fff;border:none;border-radius:12px;">🔄 Синхронизировать команды</button>
+    </div>
+  </section>
+
+  <!-- ===== Вкладка STATS ===== -->
+  <section id="tab-stats" class="tab-content">
+    <div class="card">
+      <h2>Статистика команды</h2>
+      <p>Введите номер команды в поле поиска на вкладке Scout, затем перейдите сюда.</p>
+      <div id="stats-content"></div>
+    </div>
+  </section>
+
+  <!-- ===== Вкладка EXPORT ===== -->
+  <section id="tab-export" class="tab-content">
+    <div class="card">
+      <h2>Экспорт данных</h2>
+      <button id="exportCSV" style="width:100%;padding:14px;background:#4CAF50;color:#fff;border:none;border-radius:12px;margin-bottom:10px;">📄 Скачать CSV (рейтинг)</button>
+      <button id="exportPDF" style="width:100%;padding:14px;background:#f44336;color:#fff;border:none;border-radius:12px;">📄 Скачать PDF (рейтинг)</button>
+    </div>
+  </section>
+
+  <footer>
+    <button id="themeToggle">🌓 Тема</button>
+    <button id="clearDraftBtn">🗑️ Очистить черновик</button>
+  </footer>
+</div>
+
+<script>
+// ============================================================
+//  ВСЯ ЛОГИКА ПРИЛОЖЕНИЯ (единый скрипт)
+// ============================================================
+
+// ---------- КОНФИГ ----------
+const API_BASE = 'https://script.google.com/macros/s/AKfycbzOFykTPJ_pUFL0dSaMt5PjXPwmamjhf9TytwdgjpAPefIRwv19RKbAz4L1_KlI5M30/exec'; // ЗАМЕНИТЕ НА ВАШ URL
+
+// ---------- API ----------
+async function callApi(action, params = {}) {
+  const url = new URL(API_BASE);
+  url.searchParams.append('action', action);
+  Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
+  const response = await fetch(url.toString());
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  return response.json();
+}
+
+async function loadMatches() {
+  const res = await callApi('getMatches');
+  return res.matches || [];
+}
+async function loadTeams() {
+  const res = await callApi('getTeams');
+  return res.teams || [];
+}
+async function submitData(data) {
+  const res = await callApi('submit', data);
+  return res;
+}
+async function getTeamStats(team) {
+  const res = await callApi('getStats', { team });
+  return res;
+}
+async function getRanking() {
+  const res = await callApi('getRanking');
+  return res.ranking || [];
+}
+async function getPending() {
+  const res = await callApi('getPending');
+  return res.pending || [];
+}
+async function approveSubmission(match, team, scout) {
+  const res = await callApi('approve', { match, team, scout });
+  return res;
+}
+async function generateMatches(count) {
+  const res = await callApi('generateMatches', { count });
+  return res;
+}
+async function lockMatch(match) {
+  const res = await callApi('lockMatch', { match });
+  return res;
+}
+async function unlockMatch(match) {
+  const res = await callApi('unlockMatch', { match });
+  return res;
+}
+async function syncTeams() {
+  const res = await callApi('syncTeams');
+  return res;
+}
+
+// ---------- ХРАНИЛИЩЕ (localStorage) ----------
+function saveDraft(data) { localStorage.setItem('scoutDraft', JSON.stringify(data)); }
+function loadDraft() { const raw = localStorage.getItem('scoutDraft'); return raw ? JSON.parse(raw) : null; }
+function clearDraft() { localStorage.removeItem('scoutDraft'); }
+function saveStation(station) { localStorage.setItem('station', station); }
+function loadStation() { return localStorage.getItem('station'); }
+function saveTheme(theme) { localStorage.setItem('theme', theme); }
+function loadTheme() { return localStorage.getItem('theme') || 'dark'; }
+function saveQueue(queue) { localStorage.setItem('queue', JSON.stringify(queue)); }
+function loadQueue() { const raw = localStorage.getItem('queue'); return raw ? JSON.parse(raw) : []; }
+
+// ---------- ОЧЕРЕДЬ ----------
+let queue = loadQueue();
+
+function addToQueue(item) {
+  queue.push(item);
+  saveQueue(queue);
+}
+
+async function processQueue() {
+  if (!navigator.onLine) return;
+  const copy = [...queue];
+  queue = [];
+  saveQueue(queue);
+  for (const item of copy) {
+    try {
+      if (item.type === 'submit') {
+        await callApi('submit', item.payload);
+      }
+      // другие типы можно добавить
+    } catch (e) {
+      console.error('Sync error, re-queueing', e);
+      queue.push(item);
+    }
+  }
+  saveQueue(queue);
+}
+
+// ---------- ОФЛАЙН ----------
+window.addEventListener('online', () => {
+  document.getElementById('status').textContent = '🟢 Онлайн';
+  document.getElementById('status').className = 'online';
+  processQueue();
+});
+window.addEventListener('offline', () => {
+  document.getElementById('status').textContent = '🔴 Офлайн';
+  document.getElementById('status').className = 'offline';
+});
+
+// ---------- UI (рендеринг) ----------
+function renderMatchSelect(matches) {
+  const sel = document.getElementById('matchSelect');
+  sel.innerHTML = matches.map(m => `<option value="${m}">${m}</option>`).join('');
+}
+
+function renderTeamDropdown(teams) {
+  const container = document.getElementById('teamDropdown');
+  container.innerHTML = '';
+  if (!teams || teams.length === 0) {
+    container.innerHTML = '<div style="padding:10px;color:#999;">Нет команд</div>';
+    return;
+  }
+  teams.forEach(team => {
+    const div = document.createElement('div');
+    div.textContent = team;
+    div.onmousedown = (e) => {
+      e.preventDefault();
+      document.getElementById('teamInput').value = team;
+      container.style.display = 'none';
+    };
+    container.appendChild(div);
+  });
+}
+
+function renderAdminPanel(pending) {
+  const container = document.getElementById('admin-content');
+  if (!pending || pending.length === 0) {
+    container.innerHTML = '<p>✅ Все данные подтверждены.</p>';
+    return;
+  }
+  // Группировка
+  const groups = {};
+  pending.forEach(p => {
+    const key = p.match + '|' + p.team;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(p);
+  });
+  let html = '';
+  for (const [key, records] of Object.entries(groups)) {
+    const [match, team] = key.split('|');
+    html += `<div class="pending-group"><h3>${match} – Команда ${team}</h3>`;
+    records.forEach(r => {
+      html += `<div class="pending-item">
+        <span>${r.user}</span>
+        <span>Auto: ${r.autoArtifacts}/${r.autoHits}</span>
+        <span>Tele: ${r.teleArtifacts}/${r.teleHits}</span>
+        <span>RP: ${r.parking?1:0},${r.pattern?1:0},${r.artifactsRP?1:0},${r.win?1:0}</span>
+        <button class="approve-btn" data-match="${r.match}" data-team="${r.team}" data-scout="${r.user}">✅ Approve</button>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+  container.innerHTML = html;
+  // Обработчики Approve
+  container.querySelectorAll('.approve-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const match = btn.dataset.match;
+      const team = btn.dataset.team;
+      const scout = btn.dataset.scout;
+      if (!confirm(`Подтвердить данные скаута ${scout} для ${match} – Команда ${team}?`)) return;
+      try {
+        await approveSubmission(match, team, scout);
+        // обновить список
+        const updated = await getPending();
+        renderAdminPanel(updated);
+      } catch (e) {
+        alert('Ошибка: ' + e.message);
+      }
+    });
+  });
+}
+
+function renderTeamStats(stats) {
+  const container = document.getElementById('stats-content');
+  if (!stats || !stats.matches || stats.matches.length === 0) {
+    container.innerHTML = '<p>Нет данных для этой команды.</p>';
+    return;
+  }
+  let html = `
+    <h3>Команда ${stats.team}</h3>
+    <div class="stat-grid">
+      <div>Матчей <div class="value">${stats.qCount}</div></div>
+      <div>Средний RP <div class="value">${stats.avg}</div></div>
+      <div>Медиана RP <div class="value">${stats.median}</div></div>
+      <div>Стабильность <div class="value">${stats.consistency}%</div></div>
+      <div>Лучший матч <div class="value">${stats.best.match} (${stats.best.totalRP})</div></div>
+      <div>Худший матч <div class="value">${stats.worst.match} (${stats.worst.totalRP})</div></div>
+    </div>
+    <canvas id="teamChart" width="400" height="200"></canvas>
+  `;
+  container.innerHTML = html;
+  // Построить график
+  const ctx = document.getElementById('teamChart').getContext('2d');
+  const labels = stats.matches.map(m => m.match);
+  const autoData = stats.matches.map(m => m.autoArtifacts);
+  const teleData = stats.matches.map(m => m.teleArtifacts);
+  const rpData = stats.matches.map(m => m.totalRP);
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        { label: 'Auto', data: autoData, borderColor: '#4CAF50', tension: 0.2 },
+        { label: 'TeleOp', data: teleData, borderColor: '#2196F3', tension: 0.2 },
+        { label: 'Total RP', data: rpData, borderColor: '#FF9800', tension: 0.2, yAxisID: 'y1' }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { color: '#EEE' } } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: '#444' } },
+        y1: { position: 'right', beginAtZero: true, grid: { drawOnChartArea: false } }
+      }
+    }
+  });
+}
+
+// ---------- ЭКСПОРТ ----------
+function downloadFile(content, filename, mime) {
+  const blob = new Blob([content], { type: mime });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+async function exportRankingCSV() {
+  const ranking = await getRanking();
+  const header = 'Team,Total RP,Q Count\n';
+  const rows = ranking.map(r => `${r.team},${r.totalRP},${r.qCount}`).join('\n');
+  downloadFile(header + rows, 'ranking.csv', 'text/csv');
+}
+
+async function exportRankingPDF() {
+  const ranking = await getRanking();
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.text('FTC Ranking', 14, 16);
+  const tableData = ranking.map(r => [r.team, r.totalRP.toFixed(2), r.qCount]);
+  doc.autoTable({
+    head: [['Team', 'Total RP', 'Q Count']],
+    body: tableData,
+    startY: 20,
+    styles: { fontSize: 8 },
+    headStyles: { fillColor: [76, 175, 80] }
+  });
+  doc.save('ranking.pdf');
+}
+
+// ---------- ОСНОВНОЕ ПРИЛОЖЕНИЕ ----------
+let allTeams = [];
+let currentAlliance = 'Red1';
+
+document.addEventListener('DOMContentLoaded', async () => {
+  // Тема
+  const theme = loadTheme();
+  document.body.classList.toggle('light', theme === 'light');
+  // Станция
+  currentAlliance = loadStation() || 'Red1';
+  document.querySelectorAll('.alliance-buttons button').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.alliance === currentAlliance);
+  });
+
+  // Загрузка матчей и команд
+  let matches = [];
+  let teams = [];
+  try {
+    matches = await loadMatches();
+    teams = await loadTeams();
+    allTeams = teams.sort((a,b) => Number(a)-Number(b));
+  } catch(e) { alert('Ошибка загрузки: ' + e.message); }
+
+  renderMatchSelect(matches);
+  renderTeamDropdown(allTeams);
+
+  // Восстановление черновика
+  const draft = loadDraft();
+  if (draft && draft.team) {
+    if (confirm('Восстановить предыдущие данные?')) {
+      document.getElementById('matchSelect').value = draft.match || '';
+      document.getElementById('teamInput').value = draft.team;
+      document.getElementById('autoArtifacts').innerText = draft.autoArtifacts || 0;
+      document.getElementById('autoHits').innerText = draft.autoHits || 0;
+      document.getElementById('teleArtifacts').innerText = draft.teleArtifacts || 0;
+      document.getElementById('teleHits').innerText = draft.teleHits || 0;
+      document.getElementById('parking').checked = draft.parking || false;
+      document.getElementById('pattern').checked = draft.pattern || false;
+      document.getElementById('artifactsRP').checked = draft.artifactsRP || false;
+      document.getElementById('win').checked = draft.win || false;
+    }
+  }
+
+  // Автосохранение
+  setInterval(() => {
+    const data = {
+      match: document.getElementById('matchSelect').value,
+      alliance: currentAlliance,
+      team: document.getElementById('teamInput').value,
+      autoArtifacts: document.getElementById('autoArtifacts').innerText,
+      autoHits: document.getElementById('autoHits').innerText,
+      teleArtifacts: document.getElementById('teleArtifacts').innerText,
+      teleHits: document.getElementById('teleHits').innerText,
+      parking: document.getElementById('parking').checked,
+      pattern: document.getElementById('pattern').checked,
+      artifactsRP: document.getElementById('artifactsRP').checked,
+      win: document.getElementById('win').checked
+    };
+    saveDraft(data);
+  }, 2000);
+
+  // ---------- Обработчики ----------
+  // Счётчики
+  document.querySelectorAll('.counter-row button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.id;
+      const delta = parseInt(btn.dataset.delta);
+      const el = document.getElementById(id);
+      let val = parseInt(el.innerText) + delta;
+      if (val < 0) val = 0;
+      el.innerText = val;
+      // Логика пар (Hits <= Samples)
+      const pairMap = { autoHits: 'autoArtifacts', teleHits: 'teleArtifacts' };
+      if (pairMap[id]) {
+        const pairEl = document.getElementById(pairMap[id]);
+        if (parseInt(el.innerText) > parseInt(pairEl.innerText)) {
+          pairEl.innerText = el.innerText;
+        }
+      }
+    });
+  });
+
+  // Альянс
+  document.querySelectorAll('.alliance-buttons button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.alliance-buttons button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentAlliance = btn.dataset.alliance;
+      saveStation(currentAlliance);
+    });
+  });
+
+  // Отправка
+  document.getElementById('sendBtn').addEventListener('click', async () => {
+    const team = document.getElementById('teamInput').value.trim();
+    if (!team) { alert('Выберите команду'); return; }
+    const match = document.getElementById('matchSelect').value;
+    if (!match) { alert('Выберите матч'); return; }
+    const data = {
+      match,
+      alliance: currentAlliance,
+      team,
+      autoArtifacts: parseInt(document.getElementById('autoArtifacts').innerText),
+      autoHits: parseInt(document.getElementById('autoHits').innerText),
+      teleArtifacts: parseInt(document.getElementById('teleArtifacts').innerText),
+      teleHits: parseInt(document.getElementById('teleHits').innerText),
+      parking: document.getElementById('parking').checked,
+      pattern: document.getElementById('pattern').checked,
+      artifactsRP: document.getElementById('artifactsRP').checked,
+      win: document.getElementById('win').checked
+    };
+    addToQueue({ type: 'submit', payload: data });
+    await processQueue();
+    // Сброс
+    document.getElementById('teamInput').value = '';
+    document.getElementById('autoArtifacts').innerText = '0';
+    document.getElementById('autoHits').innerText = '0';
+    document.getElementById('teleArtifacts').innerText = '0';
+    document.getElementById('teleHits').innerText = '0';
+    document.getElementById('parking').checked = false;
+    document.getElementById('pattern').checked = false;
+    document.getElementById('artifactsRP').checked = false;
+    document.getElementById('win').checked = false;
+    clearDraft();
+    // Следующий матч
+    const sel = document.getElementById('matchSelect');
+    if (sel.selectedIndex < sel.options.length - 1) {
+      sel.selectedIndex++;
+    }
+  });
+
+  // Поиск команд
+  document.getElementById('teamInput').addEventListener('input', function() {
+    const val = this.value.trim();
+    const filtered = allTeams.filter(t => t.includes(val));
+    const container = document.getElementById('teamDropdown');
+    renderTeamDropdown(filtered);
+    container.style.display = filtered.length > 0 ? 'block' : 'none';
+  });
+  document.getElementById('teamInput').addEventListener('blur', () => {
+    setTimeout(() => { document.getElementById('teamDropdown').style.display = 'none'; }, 200);
+  });
+
+  // ---------- Вкладки ----------
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const tab = btn.dataset.tab;
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.getElementById('tab-' + tab).classList.add('active');
+
+      if (tab === 'admin') {
+        // Загрузить админку
+        try {
+          const pending = await getPending();
+          renderAdminPanel(pending);
+          // также загрузить матчи для выбора
+          const m = await loadMatches();
+          const sel = document.getElementById('adminMatchSelect');
+          sel.innerHTML = m.map(match => `<option value="${match}">${match}</option>`).join('');
+        } catch(e) { alert('Ошибка загрузки админки: ' + e.message); }
+      }
+      if (tab === 'stats') {
+        const team = document.getElementById('teamInput').value.trim();
+        if (!team) { document.getElementById('stats-content').innerHTML = '<p>Сначала выберите команду на вкладке Scout.</p>'; return; }
+        try {
+          const stats = await getTeamStats(team);
+          renderTeamStats(stats);
+        } catch(e) { alert('Ошибка загрузки статистики: ' + e.message); }
+      }
+    });
+  });
+
+  // ---------- Админ-функции ----------
+  document.getElementById('genMatches').addEventListener('click', async () => {
+    const count = parseInt(document.getElementById('qCount').value) || 10;
+    if (!confirm(`Сгенерировать Q1-Q${count}?`)) return;
+    try {
+      await generateMatches(count);
+      alert('Матчи созданы');
+      // обновить списки
+      const m = await loadMatches();
+      renderMatchSelect(m);
+      const sel = document.getElementById('adminMatchSelect');
+      sel.innerHTML = m.map(match => `<option value="${match}">${match}</option>`).join('');
+    } catch(e) { alert('Ошибка: ' + e.message); }
+  });
+
+  document.getElementById('resetMatches').addEventListener('click', () => {
+    document.getElementById('qCount').value = 10;
+    document.getElementById('genMatches').click();
+  });
+
+  document.getElementById('lockMatchBtn').addEventListener('click', async () => {
+    const match = document.getElementById('adminMatchSelect').value;
+    if (!match) return alert('Выберите матч');
+    if (!confirm(`Заблокировать ${match}?`)) return;
+    try {
+      await lockMatch(match);
+      alert('Матч заблокирован');
+    } catch(e) { alert('Ошибка: ' + e.message); }
+  });
+
+  document.getElementById('unlockMatchBtn').addEventListener('click', async () => {
+    const match = document.getElementById('adminMatchSelect').value;
+    if (!match) return alert('Выберите матч');
+    if (!confirm(`Разблокировать ${match}?`)) return;
+    try {
+      await unlockMatch(match);
+      alert('Матч разблокирован');
+    } catch(e) { alert('Ошибка: ' + e.message); }
+  });
+
+  document.getElementById('syncTeamsBtn').addEventListener('click', async () => {
+    if (!confirm('Синхронизировать команды из листа Team?')) return;
+    try {
+      await syncTeams();
+      alert('Синхронизация выполнена');
+      // обновить список команд
+      const teams = await loadTeams();
+      allTeams = teams.sort((a,b) => Number(a)-Number(b));
+      renderTeamDropdown(allTeams);
+    } catch(e) { alert('Ошибка: ' + e.message); }
+  });
+
+  // ---------- Экспорт ----------
+  document.getElementById('exportCSV').addEventListener('click', exportRankingCSV);
+  document.getElementById('exportPDF').addEventListener('click', exportRankingPDF);
+
+  // ---------- Настройки ----------
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    const isLight = document.body.classList.toggle('light');
+    saveTheme(isLight ? 'light' : 'dark');
+  });
+
+  document.getElementById('clearDraftBtn').addEventListener('click', () => {
+    clearDraft();
+    alert('Черновик очищен');
+  });
+
+  // Запустить синхронизацию при загрузке
+  processQueue();
+});
+</script>
+</body>
+</html>
