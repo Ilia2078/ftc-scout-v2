@@ -13,7 +13,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
   <style>
-    /* ===== CSS (полный набор) ===== */
+    /* ===== CSS (без изменений) ===== */
     :root {
       --bg: #1E1E2E;
       --card: #2A2A3E;
@@ -320,6 +320,16 @@
     <div class="card">
       <button id="syncTeamsBtn" style="width:100%;padding:12px;background:#2196F3;color:#fff;border:none;border-radius:12px;">🔄 Синхронизировать команды</button>
     </div>
+
+    <!-- ===== НОВАЯ КНОПКА ДЛЯ ПРИНУДИТЕЛЬНОГО ОБНОВЛЕНИЯ ===== -->
+    <div class="card" style="margin-top:12px;">
+      <button id="forceUpdateBtn" style="width:100%;padding:12px;background:#FF9800;color:#fff;border:none;border-radius:12px;font-weight:bold;">
+        🔄 Принудительно обновить Average и Qualifications
+      </button>
+      <div style="font-size:12px;color:#999;margin-top:6px;text-align:center;">
+        Переписывает все утверждённые данные из RawData в Qualifications и пересчитывает Average
+      </div>
+    </div>
   </section>
 
   <!-- ===== STATS TAB ===== -->
@@ -349,7 +359,7 @@
 
 <script>
 // ============================================================
-//  FTC SCOUT V2 – FULL LOGIC with caching and offline support
+//  FTC SCOUT V2 – FULL LOGIC (с кэшированием, офлайн, исправлениями)
 // ============================================================
 
 // ---------- ADMIN PASSWORD ----------
@@ -477,6 +487,11 @@ async function clearAllData() {
   const res = await callApi('clearAll');
   return res;
 }
+// ---------- НОВАЯ ФУНКЦИЯ ДЛЯ ПРИНУДИТЕЛЬНОГО ОБНОВЛЕНИЯ ----------
+async function forceUpdate() {
+  const res = await callApi('forceUpdate');
+  return res;
+}
 
 // ---------- STORAGE ----------
 function saveDraft(data) { localStorage.setItem('scoutDraft', JSON.stringify(data)); }
@@ -586,7 +601,8 @@ function renderAdminPanel(pending) {
       const scout = btn.dataset.scout;
       if (!confirm(`Подтвердить данные скаута ${scout} для ${match} – Команда ${team}?`)) return;
       try {
-        await approveSubmission(match, team, scout);
+        const result = await approveSubmission(match, team, scout);
+        alert(result.message || 'Подтверждено');
         const updated = await getPending();
         renderAdminPanel(updated);
       } catch (e) {
@@ -915,6 +931,20 @@ document.addEventListener('DOMContentLoaded', async () => {
       allTeams = teams.sort((a,b) => Number(a)-Number(b));
       renderTeamDropdown(allTeams);
     } catch(e) { alert('Ошибка: ' + e.message); }
+  });
+
+  // ---------- НОВЫЙ ОБРАБОТЧИК ДЛЯ ПРИНУДИТЕЛЬНОГО ОБНОВЛЕНИЯ ----------
+  document.getElementById('forceUpdateBtn').addEventListener('click', async () => {
+    if (!confirm('Это перепишет все утверждённые данные из RawData в Qualifications и пересчитает Average. Продолжить?')) return;
+    try {
+      const result = await forceUpdate();
+      alert(result.message || 'Обновление выполнено успешно');
+      // Обновим админку, чтобы показать новые данные
+      const pending = await getPending();
+      renderAdminPanel(pending);
+    } catch(e) {
+      alert('Ошибка при обновлении: ' + e.message);
+    }
   });
 
   // ---------- EXPORT ----------
