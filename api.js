@@ -4,15 +4,10 @@ async function callApi(action, params = {}) {
   const url = new URL(API_BASE);
   url.searchParams.append('action', action);
   Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
-
-  const response = await fetch(url.toString(), {
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json' }
-  });
+  const response = await fetch(url.toString());
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   return response.json();
 }
-
 export async function loadMatches() {
   const res = await callApi('getMatches');
   return res.matches || [];
