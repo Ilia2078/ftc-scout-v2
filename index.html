@@ -8,9 +8,7 @@
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <title>FTC Scout V2</title>
 
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <!-- jsPDF + autoTable -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
@@ -251,7 +249,6 @@
     <span id="status" class="online">🟢 Online</span>
   </header>
 
-  <!-- Tabs -->
   <nav class="tabs">
     <button class="tab-btn active" data-tab="scout">📋 Scout</button>
     <button class="tab-btn" data-tab="admin">⚙️ Admin</button>
@@ -259,7 +256,7 @@
     <button class="tab-btn" data-tab="export">📤 Export</button>
   </nav>
 
-  <!-- ===== SCOUT TAB (English) ===== -->
+  <!-- ===== SCOUT TAB ===== -->
   <section id="tab-scout" class="tab-content active">
     <div class="card">
       <div class="match-selector">
@@ -325,7 +322,7 @@
     </div>
   </section>
 
-  <!-- ===== STATS TAB (English) ===== -->
+  <!-- ===== STATS TAB ===== -->
   <section id="tab-stats" class="tab-content">
     <div class="card">
       <h2>Team Statistics</h2>
@@ -334,7 +331,7 @@
     </div>
   </section>
 
-  <!-- ===== EXPORT TAB (English) ===== -->
+  <!-- ===== EXPORT TAB ===== -->
   <section id="tab-export" class="tab-content">
     <div class="card">
       <h2>Export Data</h2>
@@ -355,7 +352,7 @@
 //  FTC SCOUT V2 – FULL LOGIC with caching and offline support
 // ============================================================
 
-// ---------- ADMIN PASSWORD (Russian prompts) ----------
+// ---------- ADMIN PASSWORD ----------
 const ADMIN_PASSWORD = 'GearLineTeam28419';
 let adminAccessGranted = localStorage.getItem('adminAccess') === 'true';
 
@@ -398,7 +395,7 @@ function loadTeamsFromCache() {
   return raw ? JSON.parse(raw) : null;
 }
 
-// ---------- API (with fallback to cache) ----------
+// ---------- API ----------
 async function callApi(action, params = {}) {
   const url = new URL(API_BASE);
   url.searchParams.append('action', action);
@@ -419,9 +416,7 @@ async function loadMatches() {
   } catch (e) {
     console.warn('Failed to fetch matches, using cache', e);
     const cached = loadMatchesFromCache();
-    if (cached && cached.length > 0) {
-      return cached;
-    }
+    if (cached && cached.length > 0) return cached;
     return [];
   }
 }
@@ -437,9 +432,7 @@ async function loadTeams() {
   } catch (e) {
     console.warn('Failed to fetch teams, using cache', e);
     const cached = loadTeamsFromCache();
-    if (cached && cached.length > 0) {
-      return cached;
-    }
+    if (cached && cached.length > 0) return cached;
     return [];
   }
 }
@@ -533,7 +526,7 @@ window.addEventListener('offline', () => {
   document.getElementById('status').className = 'offline';
 });
 
-// ---------- UI RENDER FUNCTIONS ----------
+// ---------- UI RENDER ----------
 function renderMatchSelect(matches) {
   const sel = document.getElementById('matchSelect');
   sel.innerHTML = matches.map(m => `<option value="${m}">${m}</option>`).join('');
@@ -558,7 +551,6 @@ function renderTeamDropdown(teams) {
   });
 }
 
-// Admin panel – Russian
 function renderAdminPanel(pending) {
   const container = document.getElementById('admin-content');
   if (!pending || pending.length === 0) {
@@ -604,7 +596,6 @@ function renderAdminPanel(pending) {
   });
 }
 
-// Team stats – English
 function renderTeamStats(stats) {
   const container = document.getElementById('stats-content');
   if (!stats || !stats.matches || stats.matches.length === 0) {
@@ -688,27 +679,21 @@ let allTeams = [];
 let currentAlliance = 'Red1';
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Theme
   const theme = loadTheme();
   document.body.classList.toggle('light', theme === 'light');
-  // Station
   currentAlliance = loadStation() || 'Red1';
   document.querySelectorAll('.alliance-buttons button').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.alliance === currentAlliance);
   });
 
-  // Load matches and teams (with cache fallback)
   let matches = [];
   let teams = [];
   try {
     matches = await loadMatches();
     teams = await loadTeams();
     allTeams = teams.sort((a,b) => Number(a)-Number(b));
-  } catch (e) {
-    // Already handled inside load functions
-  }
+  } catch (e) {}
 
-  // If still empty, try cache one more time
   if (matches.length === 0) {
     const cached = loadMatchesFromCache();
     if (cached && cached.length > 0) matches = cached;
@@ -722,7 +707,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderMatchSelect(matches);
   renderTeamDropdown(allTeams);
 
-  // Restore draft
   const draft = loadDraft();
   if (draft && draft.team) {
     if (confirm('Restore previous data?')) {
@@ -739,7 +723,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // Auto-save
   setInterval(() => {
     const data = {
       match: document.getElementById('matchSelect').value,
@@ -757,42 +740,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     saveDraft(data);
   }, 2000);
 
-  // ---------- EVENT HANDLERS ----------
-  // Counters – исправленная логика
+  // ---------- COUNTERS (исправленная логика) ----------
   document.querySelectorAll('.counter-row button').forEach(btn => {
     btn.addEventListener('click', () => {
       const id = btn.dataset.id;
       const delta = parseInt(btn.dataset.delta);
       const el = document.getElementById(id);
-      let newVal = parseInt(el.innerText) + delta;
+      let newVal = Number(el.textContent) + delta;
       if (newVal < 0) newVal = 0;
 
-      // Определяем пару
       const isHits = (id === 'autoHits' || id === 'teleHits');
       const pairId = isHits ? (id === 'autoHits' ? 'autoArtifacts' : 'teleArtifacts') : null;
       const hitsId = isHits ? null : (id === 'autoArtifacts' ? 'autoHits' : 'teleHits');
 
       if (isHits) {
-        // Изменяем Hits – синхронизируем All
         const allEl = document.getElementById(pairId);
-        let allVal = parseInt(allEl.innerText) + delta;
+        let allVal = Number(allEl.textContent) + delta;
         if (allVal < 0) allVal = 0;
-        // All не может быть меньше Hits
         if (allVal < newVal) allVal = newVal;
-        el.innerText = newVal;
-        allEl.innerText = allVal;
+        el.textContent = newVal;
+        allEl.textContent = allVal;
       } else {
-        // Изменяем All – Hits не меняется, но All не может быть меньше Hits
         const hitsEl = document.getElementById(hitsId);
-        let hitsVal = parseInt(hitsEl.innerText);
+        let hitsVal = Number(hitsEl.textContent);
         let newAllVal = newVal;
         if (newAllVal < hitsVal) newAllVal = hitsVal;
-        el.innerText = newAllVal;
+        el.textContent = newAllVal;
       }
     });
   });
 
-  // Alliance buttons
+  // ---------- ALLIANCE BUTTONS ----------
   document.querySelectorAll('.alliance-buttons button').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.alliance-buttons button').forEach(b => b.classList.remove('active'));
@@ -802,7 +780,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
-  // Send
+  // ---------- SEND ----------
   document.getElementById('sendBtn').addEventListener('click', async () => {
     const team = document.getElementById('teamInput').value.trim();
     if (!team) { alert('Select a team'); return; }
@@ -823,7 +801,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
     addToQueue({ type: 'submit', payload: data });
     await processQueue();
-    // Reset
     document.getElementById('teamInput').value = '';
     document.getElementById('autoArtifacts').innerText = '0';
     document.getElementById('autoHits').innerText = '0';
@@ -834,14 +811,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('artifactsRP').checked = false;
     document.getElementById('win').checked = false;
     clearDraft();
-    // Next match
     const sel = document.getElementById('matchSelect');
     if (sel.selectedIndex < sel.options.length - 1) {
       sel.selectedIndex++;
     }
   });
 
-  // Team search
+  // ---------- TEAM SEARCH ----------
   document.getElementById('teamInput').addEventListener('input', function() {
     const val = this.value.trim();
     const filtered = allTeams.filter(t => t.includes(val));
@@ -853,16 +829,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     setTimeout(() => { document.getElementById('teamDropdown').style.display = 'none'; }, 200);
   });
 
-  // ---------- TAB SWITCHING (with admin protection) ----------
+  // ---------- TAB SWITCHING ----------
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
       const tab = btn.dataset.tab;
-
-      if (tab === 'admin') {
-        if (!checkAdminAccess()) {
-          return;
-        }
-      }
+      if (tab === 'admin' && !checkAdminAccess()) return;
 
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
@@ -896,7 +867,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
-  // ---------- ADMIN ACTIONS (Russian UI) ----------
+  // ---------- ADMIN ACTIONS ----------
   document.getElementById('genMatches').addEventListener('click', async () => {
     const count = parseInt(document.getElementById('qCount').value) || 10;
     if (!confirm(`Сгенерировать Q1-Q${count}?`)) return;
@@ -963,7 +934,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.getElementById('logoutAdminBtn').addEventListener('click', logoutAdmin);
 
-  // Start sync
   processQueue();
 });
 </script>
