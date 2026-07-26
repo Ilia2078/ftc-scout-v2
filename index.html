@@ -758,21 +758,36 @@ document.addEventListener('DOMContentLoaded', async () => {
   }, 2000);
 
   // ---------- EVENT HANDLERS ----------
-  // Counters
+  // Counters – исправленная логика
   document.querySelectorAll('.counter-row button').forEach(btn => {
     btn.addEventListener('click', () => {
       const id = btn.dataset.id;
       const delta = parseInt(btn.dataset.delta);
       const el = document.getElementById(id);
-      let val = parseInt(el.innerText) + delta;
-      if (val < 0) val = 0;
-      el.innerText = val;
-      const pairMap = { autoHits: 'autoArtifacts', teleHits: 'teleArtifacts' };
-      if (pairMap[id]) {
-        const pairEl = document.getElementById(pairMap[id]);
-        if (parseInt(el.innerText) > parseInt(pairEl.innerText)) {
-          pairEl.innerText = el.innerText;
-        }
+      let newVal = parseInt(el.innerText) + delta;
+      if (newVal < 0) newVal = 0;
+
+      // Определяем пару
+      const isHits = (id === 'autoHits' || id === 'teleHits');
+      const pairId = isHits ? (id === 'autoHits' ? 'autoArtifacts' : 'teleArtifacts') : null;
+      const hitsId = isHits ? null : (id === 'autoArtifacts' ? 'autoHits' : 'teleHits');
+
+      if (isHits) {
+        // Изменяем Hits – синхронизируем All
+        const allEl = document.getElementById(pairId);
+        let allVal = parseInt(allEl.innerText) + delta;
+        if (allVal < 0) allVal = 0;
+        // All не может быть меньше Hits
+        if (allVal < newVal) allVal = newVal;
+        el.innerText = newVal;
+        allEl.innerText = allVal;
+      } else {
+        // Изменяем All – Hits не меняется, но All не может быть меньше Hits
+        const hitsEl = document.getElementById(hitsId);
+        let hitsVal = parseInt(hitsEl.innerText);
+        let newAllVal = newVal;
+        if (newAllVal < hitsVal) newAllVal = hitsVal;
+        el.innerText = newAllVal;
       }
     });
   });
