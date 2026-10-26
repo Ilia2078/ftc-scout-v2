@@ -1,3 +1,3 @@
 // Public deployment URL, not a password. Replace after deploying Apps Script.
-export const API_URL = 'https://script.googleusercontent.com/macros/echo?user_content_key=AUkAhnTLkpwWNAoq9iIhfzw65ObTvXb3Afn7JPh6100aPKc4_o1jEExUka8G3rBHxLpNIcdqZ1-UlTMHpb3KhzzvOYZMmUNu4hBE2I1bbYQm4VK58xj7zmR9bzCUA80d21QxE9zz_90rkhRB4mV9emZNvk-rTxXoLLAlQojYiViPacmXdzAKYnMQKSYufla8RlZBHuX4qqaPRgN6zdKY8t6qyvjtJDmfa4a5N2uyeV3j1Y2pRoYVa6QGVd5MFL0rppadGB05-jXiW0-kWN9gKP4-d5LhZhcjBA&lib=M_mzGURiSVkAA0nnHmHcp9kB0UWvdODV-';
+export const API_URL = 'https://script.google.com/macros/s/AKfycbxlhoZdW1-RzePfb7vuH5-feM417_XmezVLdfWkqS5wh9SwYxhrSsthl28c0qVZP5WO/exec';
 export const REQUIRED_API_VERSION = 2;
