@@ -17,10 +17,11 @@ export async function syncQueue({ onUpdate=()=>{}, verify=verifyApi, send=submit
     // navigator.onLine can be wrong, but an explicit offline status avoids wasted time.
     if (!navigator.onLine) { onUpdate(); return {sent:0,remaining:items.length}; }
     await verify(); // refuse to flush to old/misconfigured backend
-    let sent=0;
+    let sent=0, needsRepair=0;
     for (const entry of items) {
       try {
-        await send(entry.payload);
+        const ack = await send(entry.payload);
+        if (ack?.needsRepair || (ack?.approved === true && ack?.published === false)) needsRepair++;
         await deletePending(entry.submissionId);
         sent++;
       } catch(e) {
@@ -33,7 +34,7 @@ export async function syncQueue({ onUpdate=()=>{}, verify=verifyApi, send=submit
     }
     const remaining=(await pending()).length;
     onUpdate();
-    return {sent,remaining};
+    return {sent,remaining,needsRepair};
   })();
   try { return await active; }
   finally { active=null; }
