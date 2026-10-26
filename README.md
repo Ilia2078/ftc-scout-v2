@@ -71,3 +71,41 @@
 - **Чтобы все следующие отправки автоматически обновляли Qualifications**, в Google Apps Script откройте `Code.gs`, найдите в функции `submitScoutData(data)` вызов `writeToQualifications(row);` и замените его на `rebuildQualifications_();`. Альтернатива: добавьте файл [apps-script/RepairQualifications.gs](apps-script/RepairQualifications.gs) в Apps Script и вызовите `ftcRepairQualifications();` вместо `writeToQualifications(row);`. Архив обновлённого проекта также содержит полный серверный `Code.gs` с исправлением.
 - Сохраните серверный код, запустите `forceUpdateData` один раз (или `ftcRepairQualifications` с альтернативным файлом), затем обязательно выпустите **новую версию существующего веб-развёртывания** через `Развернуть → Управление развёртываниями → Изменить → Новая версия → Развернуть`. Новый серверный код не применяется автоматически при коммите на GitHub.
 - Пока на устройстве есть неотправленные записи, **не очищайте кэш и хранилище сайта**. Обновление Service Worker не удаляет очередь IndexedDB.
+
+## Восстановление Average (2026-10-26)
+
+Если записи присутствуют в `RawData`, но в `Average` отсутствует часть
+матчей, скопируйте [`apps-script/RepairAverage.gs`](apps-script/RepairAverage.gs)
+в связанный с Google Таблицей редактор Apps Script, задайте свойство
+`SPREADSHEET_ID` и вручную запустите `ftcRepairAverage()`.
+
+Функция считает все строки `RawData` с `Approved=TRUE` (колонка N).
+Счётчики `Q Count`, проценты попаданий по сумме попыток и средний
+`Total RP = (Parking + Pattern + ArtifactsRP + 3*Win) / Q Count`
+пересчитываются из исходных записей. Строки `RawData` не изменяются,
+вкладка `Average` сохраняет шапку, пустую строку 2 и оформление.
+Сортировка существующих команд также не меняется.
+
+Для **автоматического** пересчёта разместите `ftcRepairAverage();`
+после записи и одобрения новой строки в `submitScoutData(data)`, а также
+после ручного подтверждения в панели администратора. Пересчёт
+`Qualifications` и `Average` лучше вызывать в **раздельных**
+`try/catch`, чтобы ошибка одного отчёта не блокировала второй:
+
+```javascript
+if (approved) {
+  try { rebuildQualifications_(); } catch (err) { console.error('Qualifications:', err); }
+  try { ftcRepairAverage(); } catch (err) { console.error('Average:', err); }
+}
+```
+
+Этот фрагмент заменяет прежний блок обновления в случае, если сервер
+использует функции `rebuildQualifications_` и `submitScoutData` из
+`Code.gs`. Если текущий проект использует
+`ftcRepairQualifications()`, оставьте этот вызов вместо
+`rebuildQualifications_()`. После изменения Apps Script обязательно
+**создайте новую версию существующего Web App deployment**. Один лишь
+коммит в GitHub не обновляет исполняемый Apps Script.
+
+При `REQUIRE_APPROVAL=true` записи без подтверждения не участвуют
+в `Average`; вызов после подтверждения администратором обязателен.
