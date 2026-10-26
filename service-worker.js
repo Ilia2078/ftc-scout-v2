@@ -1,9 +1,9 @@
 // GitHub Pages app shell only; offline submissions live in IndexedDB/localStorage.
 // Never intercept/cache requests to Google Apps Script.
-const CACHE = 'ftc-scout-shell-v6-20261026';
+const CACHE = 'ftc-scout-shell-v7-20261026';
 const CORE = [
   './', './index.html', './style.css', './app.js', './api.js',
-  './storage.js', './queue.js', './config.js', './manifest.json',
+  './storage.js', './queue.js', './counter-rules.js', './config.js', './manifest.json',
   './icons/icon-192.png', './icons/icon-512.png'
 ];
 const SCOPE = new URL('./', self.location.href);
