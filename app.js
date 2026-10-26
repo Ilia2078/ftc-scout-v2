@@ -1,6 +1,7 @@
 import { verifyApi,fetchTeams,fetchMatches,fetchRanking,fetchStats } from './api.js';
 import { getCache,setCache,getSetting,setSetting,createId,putPending,pending } from './storage.js';
 import { queueSubmission,getQueue,syncQueue,removeQueued } from './queue.js';
+import { adjustCounters } from './counter-rules.js';
 const $=id=>document.getElementById(id);
 const fields=['autoArtifacts','autoHits','teleArtifacts','teleHits'];
 const flags=['parking','pattern','artifactsRP','win'];
@@ -24,7 +25,7 @@ function restoreDraft(){let d=getCache('draft',null);if(!d){try{d=JSON.parse(loc
  if(d.match)$('matchSelect').value=d.match;
  if(d.team)$('teamInput').value=String(d.team);
  if(d.alliance && ['Red1','Red2','Blue1','Blue2'].includes(d.alliance))station=d.alliance;
- for(const f of fields)$(f).textContent=String(Math.max(0,Number(d[f])||0));for(const f of flags)$(f).checked=d[f]===true||d[f]==='true';setStation(station);
+ for(const f of fields)$(f).textContent=String(Math.max(0,Math.min(1000,Number(d[f])||0)));for(const phase of ['auto','tele']){const art=$(phase+'Artifacts'),hits=$(phase+'Hits');art.textContent=String(Math.max(Number(art.textContent)||0,Number(hits.textContent)||0));}for(const f of flags)$(f).checked=d[f]===true||d[f]==='true';setStation(station);
 }
 function setStation(s){station=s;setSetting('station',s);document.querySelectorAll('[data-station]').forEach(b=>b.classList.toggle('active',b.dataset.station===s));saveDraft();}
 function clearCounters(){for(const f of fields)$(f).textContent='0';for(const f of flags)$(f).checked=false;$('teamInput').value='';saveDraft();}
@@ -44,7 +45,20 @@ async function loadRanking(){try{const val=await fetchRanking();ranking=val;setC
 async function loadStats(){const team=$('statsTeam').value.trim();if(!/^\d+$/.test(team)){note('Укажите номер команды');return;}try{const s=await fetchStats(team);setCache('stats_'+safeFilename(team),s);renderStats(s);}catch(e){const cache=getCache('stats_'+safeFilename(team),null);if(cache)renderStats(cache);else note('Нет сохранённой статистики: '+e.message,'danger');}}
 function renderStats(s){const root=$('statsResult');root.replaceChildren();const txt=document.createElement('p');txt.textContent=`Команда ${s.team||'?'} · ${s.qCount||0} матчей · средний RP ${s.avg||0} · медиана ${s.median||0} · стабильность ${s.consistency||0}%`;root.append(txt);for(const m of s.matches||[]){const row=document.createElement('div');row.className='item';row.textContent=`${m.match}: Auto ${m.autoArtifacts} / ${m.autoHits}; TeleOp ${m.teleArtifacts} / ${m.teleHits}; RP ${m.totalRP}`;root.append(row);}}
 function csvRanking(){const clean=v=>'"'+String(v??'').replaceAll('"','""')+'"';const rows=[['Team','Total RP','Q Count'],...ranking.map(x=>[x.team,x.totalRP,x.qCount])];download('ftc-ranking.csv','\ufeff'+rows.map(r=>r.map(clean).join(',')).join('\r\n'),'text/csv;charset=utf-8');}
-function initCounters(){document.querySelectorAll('[data-counter]').forEach(btn=>btn.addEventListener('click',()=>{const id=btn.dataset.counter;const el=$(id);const delta=Number(btn.dataset.delta);const n=Math.max(0,Math.min(1000,(Number(el.textContent)||0)+delta));el.textContent=String(n);if(id==='autoArtifacts'&&Number($('autoHits').textContent)>n)$('autoHits').textContent=String(n);if(id==='teleArtifacts'&&Number($('teleHits').textContent)>n)$('teleHits').textContent=String(n);if(id==='autoHits'&&n>Number($('autoArtifacts').textContent))$('autoArtifacts').textContent=String(n);if(id==='teleHits'&&n>Number($('teleArtifacts').textContent))$('teleArtifacts').textContent=String(n);saveDraft();}));}
+function initCounters(){
+  document.querySelectorAll('[data-counter]').forEach(btn=>btn.addEventListener('click',()=>{
+    const id=btn.dataset.counter;
+    const phase=id.startsWith('auto')?'auto':'tele';
+    const artifactsEl=$(phase+'Artifacts');
+    const hitsEl=$(phase+'Hits');
+    const target=id.endsWith('Hits')?'hits':'artifacts';
+    const delta=Number(btn.dataset.delta);
+    const next=adjustCounters(Number(artifactsEl.textContent),Number(hitsEl.textContent),target,delta);
+    artifactsEl.textContent=String(next.artifacts);
+    hitsEl.textContent=String(next.hits);
+    saveDraft();
+  }));
+}
 function legacyId(item,index){const payload=JSON.stringify(item);let hash=2166136261;for(let i=0;i<payload.length;i++){hash=Math.imul(hash^payload.charCodeAt(i),16777619);}return 'legacy_'+index+'_'+(hash>>>0).toString(16);}
 async function migrateLegacyQueue(){let legacy;try{legacy=JSON.parse(localStorage.getItem('queue')||'[]')}catch(e){note('Старая очередь повреждена. Сделайте копию данных Safari.','danger');return;}
  if(!Array.isArray(legacy)||!legacy.length)return;
